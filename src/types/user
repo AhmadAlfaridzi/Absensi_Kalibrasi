@@ -1,0 +1,10 @@
+export type UserRole = 'admin' | 'Owner' | 'Direktur' | 'karyawan'
+
+export interface User {
+  id: string
+  name: string
+  username: string
+  email: string
+  role: UserRole
+  image?: string // Tambahkan sebagai properti opsional
+}

@@ -3,6 +3,8 @@
 import { useState, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
 import Image from 'next/image'
+import { useAuth } from '@/context/authContext'
+import { toast } from 'sonner'
 
 export default function LoginPage() {
   const [username, setUsername] = useState('')
@@ -12,6 +14,7 @@ export default function LoginPage() {
   const [currentDate, setCurrentDate] = useState('')
   const [currentTime, setCurrentTime] = useState('')
   const router = useRouter()
+  const { login } = useAuth() // Menggunakan login dari auth context
 
   // Update date and time in real-time
   useEffect(() => {
@@ -47,25 +50,16 @@ export default function LoginPage() {
     setError('')
 
     try {
-      const response = await fetch('/api/auth/login', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ username, password }),
-      })
-
-      const data = await response.json()
-
-      if (!response.ok) {
-        throw new Error(data.message || 'Login failed')
-      }
-
+      await login(username, password)
+      toast.success('Login berhasil!')
       router.push('/dashboard')
     } catch (error) {
+      let errorMessage = 'Terjadi kesalahan saat login'
       if (error instanceof Error) {
-        setError(error.message || 'Invalid username or password')
-      } else {
-        setError('An unknown error occurred')
+        errorMessage = error.message || errorMessage
       }
+      setError(errorMessage)
+      toast.error(errorMessage)
     } finally {
       setIsLoading(false)
     }
@@ -150,7 +144,7 @@ export default function LoginPage() {
                   className="w-full px-4 py-3 sm:py-2 bg-[#1a1a1a]/95 border border-gray-600 rounded-lg sm:rounded-md text-white focus:outline-none focus:ring-1 sm:focus:ring-2 focus:ring-[#FBF991] text-sm sm:text-base"
                   placeholder="Username"
                   required
-                  inputMode="email"
+                  autoComplete="username"
                   autoCapitalize="none"
                 />
               </div>
@@ -171,7 +165,7 @@ export default function LoginPage() {
                   placeholder="Password"
                   required
                   minLength={6}
-                  inputMode="none"
+                  autoComplete="current-password"
                 />
               </div>
 
