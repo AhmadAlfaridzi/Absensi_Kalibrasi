@@ -22,7 +22,7 @@ __turbopack_context__.n(__turbopack_context__.i("[project]/src/app/layout.tsx [a
 
 var { g: global, __dirname } = __turbopack_context__;
 {
-// import Image from "next/image";
+//  import Image from "next/image";
 __turbopack_context__.s({
     "default": (()=>Home)
 });

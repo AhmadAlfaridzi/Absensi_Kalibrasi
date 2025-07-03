@@ -10,6 +10,8 @@ interface User {
   name: string
   username: string
   email: string
+  position: string
+  department: string
   role: UserRole
   image?: string
 }
@@ -32,27 +34,59 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     if (storedUser) setUser(JSON.parse(storedUser))
   }, [])
 
-const login = async (username: string, password: string) => {
-  const users: User[] = [
-    { id: '1', name: 'Admin', username: 'admin1', email: 'admin@example.com', role: 'admin' },
-    { id: '2', name: 'Owner', username: 'owner1', email: 'owner@example.com', role: 'Owner' },
-    { id: '3', name: 'Direktur', username: 'direktur1', email: 'direktur@example.com', role: 'Direktur' },
-    { id: '4', name: 'Karyawan', username: 'karyawan1', email: 'karyawan@example.com', role: 'karyawan' }
-  ];
+ const login = async (username: string, password: string) => {
+    const users: User[] = [
+      { 
+        id: '1', 
+        name: 'Admin', 
+        username: 'admin1', 
+        email: 'admin@example.com', 
+        position: 'Administrator',
+        department: 'IT',
+        role: 'admin' as UserRole
+      },
+      { 
+        id: '2', 
+        name: 'Owner', 
+        username: 'owner1', 
+        email: 'owner@example.com', 
+        position: 'Owner',
+        department: 'Management',
+        role: 'Owner' as UserRole
+      },
+      { 
+        id: '3', 
+        name: 'Direktur', 
+        username: 'direktur1', 
+        email: 'direktur@example.com', 
+        position: 'Director',
+        department: 'Management',
+        role: 'Direktur' as UserRole
+      },
+      { 
+        id: '4', 
+        name: 'Karyawan', 
+        username: 'karyawan1', 
+        email: 'karyawan@example.com', 
+        position: 'Staff',
+        department: 'Operations',
+        role: 'karyawan' as UserRole
+      }
+    ]
 
   return new Promise<void>((resolve, reject) => {
     setTimeout(() => {
-      const foundUser = users.find(u => u.username === username && password === '123456')
+      const foundUser = users.find(u => u.username === username && password === '123456');
       if (foundUser) {
-        setUser(foundUser)
-        localStorage.setItem('user', JSON.stringify(foundUser))
-        resolve() // Resolve tanpa return value
+        setUser(foundUser);
+        localStorage.setItem('user', JSON.stringify(foundUser));
+        resolve();
       } else {
-        reject(new Error('Invalid credentials'))
+        reject(new Error('Invalid credentials'));
       }
-    }, 500)
-  })
-}
+    }, 500);
+  });
+};
 
   const logout = () => {
     setUser(null)

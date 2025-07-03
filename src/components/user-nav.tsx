@@ -13,7 +13,7 @@ import {
 } from '@/components/ui/dropdown-menu'
 
 interface UserNavProps {
-  image?: string // Tambahkan prop image opsional
+  image?: string 
 }
 
 export function UserNav({ image }: UserNavProps) {
@@ -22,7 +22,7 @@ export function UserNav({ image }: UserNavProps) {
 
   if (!user) return null
 
-  // Role-specific menu items
+  // Role untuk setiap user
   const getRoleSpecificItems = () => {
     const items = [
       <DropdownMenuItem key="profile" onClick={() => router.push('/profile')}>
@@ -30,7 +30,7 @@ export function UserNav({ image }: UserNavProps) {
       </DropdownMenuItem>
     ]
 
-    // Gunakan tipe langsung daripada mengimpor UserRole
+    //mengimpor UserRole
     if (user.role === 'admin' || user.role === 'Owner') {
       items.push(
         <DropdownMenuItem key="settings" onClick={() => router.push('/settings')}>

@@ -1,358 +1,403 @@
 'use client'
-
-import { useState, useEffect } from 'react'
+import { useMemo, useState, useEffect } from 'react'
 import { useAuth } from '@/context/authContext'
-import { useRouter, usePathname } from 'next/navigation'
-import { Disclosure, Transition } from '@headlessui/react'
-import { ChevronDownIcon } from '@heroicons/react/20/solid'
-import * as LucideIcons from 'lucide-react'
-import type { LucideProps } from 'lucide-react'
-import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer } from 'recharts'
+import { usePathname } from 'next/navigation'
+import Link from 'next/link'
+import { motion } from 'framer-motion'
+import { 
+  Collapsible,
+  CollapsibleTrigger,
+  CollapsibleContent,
+} from '@/components/ui/collapsible'
+import { Button } from '@/components/ui/button'
+import { 
+  ChevronDownIcon,
+  LayoutDashboard,
+  CalendarCheck,
+  History,
+  Mail,
+  FileText,
+  Users,
+  Box,
+  Settings,
+  LogOut,
+  Briefcase,
+  Wrench,
+  Package,
+  LogIn
+} from 'lucide-react'
+import { SmoothTransition } from '@/components/ui/smooth-transition'
 
+function useMediaQuery(query: string): boolean {
+  const [matches, setMatches] = useState(false)
+
+  useEffect(() => {
+    const media = window.matchMedia(query)
+    if (media.matches !== matches) {
+      setMatches(media.matches)
+    }
+    const listener = () => setMatches(media.matches)
+    media.addListener(listener)
+    return () => media.removeListener(listener)
+  }, [matches, query])
+
+  return matches
+}
 
 type MenuItem = {
   name: string
   href: string
-  icon?: keyof typeof LucideIcons
+  icon?: React.ReactNode
   items: {
     name: string
     href: string
-    icon?: keyof typeof LucideIcons
+    icon?: React.ReactNode
   }[]
 }
 
-const dashboardStats = {
-  totalKaryawan: 52,
-  tepatWaktu: 45,
-  terlambat: 5,
-  tidakHadir: 2
-}
-
-const attendanceData = [
-  { name: 'Jan', hadir: 45, terlambat: 5, tidakHadir: 2 },
-  { name: 'Feb', hadir: 42, terlambat: 8, tidakHadir: 3 },
-  { name: 'Mar', hadir: 48, terlambat: 2, tidakHadir: 1 }
-]
-
-export default function DashboardLayout({
-  children,
-}: {
-  children: React.ReactNode
-}) {
+export default function DashboardLayout({ children }: { children: React.ReactNode }) {
   const { user, logout } = useAuth()
-  const router = useRouter()
   const pathname = usePathname()
-  const [activeMenu, setActiveMenu] = useState('')
-  const [isLoading, setIsLoading] = useState(true)
+  const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false)
+  const isMobile = useMediaQuery('(max-width: 768px)')
 
   useEffect(() => {
-    const checkAuth = async () => {
-      if (!user) {
-        const token = localStorage.getItem('authToken') || ''
-        if (!token) {
-          router.push('/login')
-        } else {
-          setIsLoading(false)
-        }
-      } else {
-        setIsLoading(false)
-      }
+    if (isMobileMenuOpen) {
+      document.body.style.overflow = 'hidden'
+    } else {
+      document.body.style.overflow = 'auto'
     }
+    
+    return () => {
+      document.body.style.overflow = 'auto'
+    }
+  }, [isMobileMenuOpen])
 
-    checkAuth()
-  }, [user, router])
-
-  useEffect(() => {
-    if (pathname) {
-    const currentPath = pathname.split('/').pop() || 'dashboard'
-    const activeItem = menuItems.find(item => 
-      item.href?.includes(currentPath) || 
-      item.items.some(subItem => subItem.href?.includes(currentPath))
-    )
-     if (activeItem) setActiveMenu(activeItem.name)
-  }
-}, [pathname])
-
-  const menuItems: MenuItem[] = [
+  const menuItems: MenuItem[] = useMemo(() => [
     {
       name: 'Dashboard',
-      icon: 'LayoutDashboard',
+      icon: <LayoutDashboard className="h-5 w-5 text-blue-400" />,
       href: '/dashboard',
       items: []
     },
     {
       name: 'Presensi',
-      icon: 'CalendarCheck',
-      href: '',
+      icon: <CalendarCheck className="h-5 w-5 text-green-400" />,
+      href: '/dashboard/presensi',
       items: [
-        { name: 'Absensi', href: '/dashboard/presensi/absensi' },
-        { name: 'History', href: '/dashboard/presensi/history' }
+        { 
+          name: 'Absen', 
+          icon: <LogIn className="h-4 w-4 text-green-400" />,
+          href: '/dashboard/presensi/absen' 
+        },
+        { 
+          name: 'History', 
+          icon: <History className="h-4 w-4 text-green-400" />,
+          href: '/dashboard/presensi/history' 
+        }
       ]
     },
     {
       name: 'Riwayat Absensi',
-      icon: 'History',
-      href: '/dashboard/riwayat',
+      icon: <History className="h-5 w-5 text-purple-400" />,
+      href: '/dashboard/riwayat-absensi',
+      items: []
+    },
+    {
+      name: 'Surat Keluar',
+      icon: <Mail className="h-5 w-5 text-red-400" />,
+      href: '/dashboard/surat-keluar',
+      items: []
+    },
+    {
+      name: 'Rekap Absensi',
+      icon: <FileText className="h-5 w-5 text-orange-400" />,
+      href: '/dashboard/rekap-absensi',
       items: []
     },
     {
       name: 'Pegawai',
-      icon: 'Users',
-      href: '',
+      icon: <Users className="h-5 w-5 text-yellow-400" />,
+      href: '/dashboard/pegawai',
       items: [
-        { name: 'Data', icon: 'UserCog', href: '/dashboard/pegawai/data' },
-        { name: 'Jabatan', icon: 'Briefcase', href: '/dashboard/pegawai/jabatan' }
+        { 
+          name: 'Data', 
+          icon: <Users className="h-4 w-4 text-yellow-400" />,
+          href: '/dashboard/pegawai/data' 
+        },
+        { 
+          name: 'Jabatan', 
+          icon: <Briefcase className="h-4 w-4 text-yellow-400" />,
+          href: '/dashboard/pegawai/jabatan' 
+        }
+      ]
+    },
+    {
+      name: 'Inventory',
+      icon: <Box className="h-5 w-5 text-teal-400" />,
+      href: '/dashboard/inventory',
+      items: [
+        { 
+          name: 'Alat Kalibrasi', 
+          icon: <Wrench className="h-4 w-4 text-teal-400" />,
+          href: '/dashboard/inventory/kalibrasi' 
+        },
+        { 
+          name: 'Sparepart', 
+          icon: <Package className="h-4 w-4 text-teal-400" />,
+          href: '/dashboard/inventory/sparepart' 
+        }
       ]
     },
     {
       name: 'Pengaturan',
-      icon: 'Settings',
+      icon: <Settings className="h-5 w-5 text-gray-400" />,
       href: '/dashboard/pengaturan',
       items: []
-    }
-  ]
+    },
+  ], [])
 
-  const renderIcon = (iconName?: keyof typeof LucideIcons, props?: LucideProps) => {
-    if (!iconName) return null
-    const IconComponent = LucideIcons[iconName] as React.ComponentType<LucideProps>
-    return <IconComponent {...props} />
-  }
+const activeMenu = useMemo(() => {
+    if (!pathname) return 'Dashboard'
+    const currentPath = pathname.split('/dashboard/')[1]?.split('/')[0] || ''
+    const foundItem = menuItems.find(item => 
+      item.href.includes(currentPath) || 
+      item.items.some(subItem => subItem.href.includes(currentPath)))
+    return foundItem?.name || 'Dashboard'
+  }, [pathname, menuItems])
 
-  const handleLogout = () => {
-    localStorage.removeItem('authToken')
-    logout()
-    router.push('/login')
-  }
-
-  if (isLoading) {
+ if (!user) {
     return (
       <div className="flex items-center justify-center h-screen bg-[#0d0d0d]">
-        <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-[#FBF991]"></div>
+        <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-blue-500" />
       </div>
     )
   }
 
   return (
-    <div className="flex h-screen bg-[#0d0d0d]/95 text-gray-200">
-      {/* Sidebar */}
-      <aside className="w-64 flex-shrink-0 bg-[#0d0d0d] border-r border-[#4A5568] flex flex-col">
-        {/* Header Sidebar */}
-        <div className="p-4 border-b border-[#4A5568]">
-          <h2 className="text-lg font-bold text-white capitalize">
-            {user?.role} Dashboard
-          </h2>
-          <div className="mt-2 space-y-1">
-            <p className="text-xs text-gray-400">@{user?.username}</p>
-            <p className="text-xs text-gray-400 truncate">{user?.email}</p>
+    <div className="flex h-screen bg-[#0d0d0d] text-gray-200">
+      {/* Sidebar menu  -ds*/}
+       {!isMobile ? (
+        <motion.aside
+          initial={{ x: -300 }}
+          animate={{ x: 0 }}
+          transition={{ type: 'spring', stiffness: 100 }}
+          className="w-64 bg-[#0d0d0d] border-r border-[#333] flex flex-col"
+        >
+        <div className="p-4 border-b border-[#333]">
+          <h2 className="text-lg font-bold text-white">{user.role} Dashboard</h2>
+          <div className="mt-2">
+            <p className="text-sm text-blue-400">@{user.username}</p>
+            <p className="text-xs text-gray-400 truncate">{user.email}</p>
           </div>
         </div>
 
-        {/* Navigasi Menu */}
-        <nav className="flex-1 overflow-y-auto p-4 space-y-1">
+        <nav className="flex-1 p-4 space-y-1 overflow-y-auto">
           {menuItems.map((item) => (
             <div key={item.name}>
               {item.items.length > 0 ? (
-                <Disclosure as="div">
-                  {({ open }) => (
-                    <>
-                      <Disclosure.Button
-                        className={`flex items-center justify-between w-full p-2 rounded hover:bg-gray-800 ${
-                          activeMenu === item.name ? 'bg-gray-800' : ''
-                        }`}
-                        onClick={() => setActiveMenu(item.name)}
+                <Collapsible>
+                  <CollapsibleTrigger asChild>
+                    <Button
+                      variant="ghost"
+                      className={`w-full justify-between hover:bg-[#1a1a1a] hover:text-white px-3 py-2 ${
+                        activeMenu === item.name ? 'bg-[#1a1a1a] text-white' : 'text-gray-400'
+                      }`}
+                    >
+                      <div className="flex items-center">
+                        {item.icon}
+                        <span className="ml-2">{item.name}</span>
+                      </div>
+                      <ChevronDownIcon className="h-4 w-4 text-current" />
+                    </Button>
+                  </CollapsibleTrigger>
+                  <CollapsibleContent className="ml-6 space-y-1">
+                    {item.items.map((subItem) => (
+                      <motion.div
+                        key={subItem.name}
+                        whileHover={{ scale: 1.02 }}
+                        transition={{ type: 'spring', stiffness: 300 }}
                       >
-                        <div className="flex items-center">
-                          {item.icon && renderIcon(item.icon, { className: "h-4 w-4" })}
-                          <span className="ml-2">{item.name}</span>
-                        </div>
-                        <ChevronDownIcon
-                          className={`${open ? 'transform rotate-180' : ''} h-4 w-4`}
-                        />
-                      </Disclosure.Button>
-                      <Transition
-                        enter="transition duration-100 ease-out"
-                        enterFrom="transform scale-95 opacity-0"
-                        enterTo="transform scale-100 opacity-100"
-                        leave="transition duration-75 ease-out"
-                        leaveFrom="transform scale-100 opacity-100"
-                        leaveTo="transform scale-95 opacity-0"
-                      >
-                        <Disclosure.Panel className="ml-6 space-y-1">
-                          {item.items.map((subItem) => (
-                            <a
-                              key={subItem.name}
-                              href={subItem.href}
-                              className="flex items-center p-2 text-sm rounded hover:bg-gray-800"
-                              onClick={(e) => {
-                                e.preventDefault()
-                                router.push(subItem.href)
-                                setActiveMenu(item.name)
-                              }}
-                            >
-                              {subItem.icon && renderIcon(subItem.icon, { className: "h-4 w-4" })}
-                              <span className={`${subItem.icon ? 'ml-2' : 'ml-6'}`}>
-                                {subItem.name}
-                              </span>
-                            </a>
-                          ))}
-                        </Disclosure.Panel>
-                      </Transition>
-                    </>
-                  )}
-                </Disclosure>
+                        <Link href={subItem.href}>
+                          <Button
+                            variant="ghost"
+                            className={`w-full justify-start hover:bg-[#1a1a1a] hover:text-white px-3 py-1 ${
+                              pathname === subItem.href ? 'bg-[#1a1a1a] text-white' : 'text-gray-400'
+                            }`}
+                          >
+                            {subItem.icon}
+                            <span className="ml-2">{subItem.name}</span>
+                          </Button>
+                        </Link>
+                      </motion.div>
+                    ))}
+                  </CollapsibleContent>
+                </Collapsible>
               ) : (
-                <a
-                  href={item.href}
-                  className={`flex items-center p-2 rounded hover:bg-gray-800 ${
-                    activeMenu === item.name ? 'bg-gray-800' : ''
-                  }`}
-                  onClick={(e) => {
-                    e.preventDefault()
-                    router.push(item.href)
-                    setActiveMenu(item.name)
-                  }}
+                <motion.div
+                  whileHover={{ scale: 1.02 }}
+                  whileTap={{ scale: 0.98 }}
                 >
-                  {item.icon && renderIcon(item.icon, { className: "h-4 w-4" })}
-                  <span className="ml-2">{item.name}</span>
-                </a>
+                  <Link href={item.href}>
+                    <Button
+                      variant="ghost"
+                      className={`w-full justify-start hover:bg-[#1a1a1a] hover:text-white px-3 py-2 ${
+                        activeMenu === item.name ? 'bg-[#1a1a1a] text-white' : 'text-gray-400'
+                      }`}
+                    >
+                      {item.icon}
+                      <span className="ml-2">{item.name}</span>
+                    </Button>
+                  </Link>
+                </motion.div>
               )}
             </div>
           ))}
         </nav>
 
-        {/* Footer Sidebar - Logout */}
-        <div className="p-4 border-t border-[#4A5568]">
-          <button
-            onClick={handleLogout}
-            className="flex items-center w-full p-2 rounded hover:bg-gray-800"
+        <div className="p-4 border-t border-[#333]">
+          <Button 
+            variant="ghost"
+            className="w-full justify-start hover:bg-[#1a1a1a] hover:text-white text-gray-400 px-3 py-2"
+            onClick={() => {
+              localStorage.removeItem('authToken')
+              logout()
+              window.location.href = '/login'
+            }}
           >
-            {renderIcon('LogOut', { className: "h-4 w-4" })}
-            <span className="ml-2">Logout</span>
-          </button>
+            <LogOut className="h-5 w-5 mr-2" />
+            <span>Logout</span>
+          </Button>
         </div>
-      </aside>
-
-      {/* Main Content Area */}
-      <main className="flex-1 flex flex-col overflow-hidden">
-        {/* Header */}
-        <header className="bg-[#1a1a1a] p-4 border-b border-[#4A5568]">
-          <h1 className="text-xl font-semibold">
-            {activeMenu || 'Dashboard'}
-          </h1>
-        </header>
-
-        {/* Content */}
-        <div className="flex-1 overflow-auto p-6 bg-[#0d0d0d]/95">
-          {activeMenu === 'Dashboard' ? (
-            <div className="space-y-6">
-              {/* Statistik */}
-              <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
-                {/* Total Karyawan */}
-                <div className="bg-[#1a1a1a] p-4 rounded-lg border-l-4 border-blue-500">
-                  <div className="flex justify-between items-center">
-                    <div>
-                      <p className="text-gray-400">Total Karyawan</p>
-                      <h2 className="text-2xl font-bold">{dashboardStats.totalKaryawan}</h2>
-                    </div>
-                    {renderIcon('Users', { className: "h-8 w-8 text-blue-400" })}
-                  </div>
-                </div>
-
-                {/* Tepat Waktu */}
-                <div className="bg-[#1a1a1a] p-4 rounded-lg border-l-4 border-green-500">
-                  <div className="flex justify-between items-center">
-                    <div>
-                      <p className="text-gray-400">Tepat Waktu</p>
-                      <h2 className="text-2xl font-bold">{dashboardStats.tepatWaktu}</h2>
-                    </div>
-                    {renderIcon('CheckCircle', { className: "h-8 w-8 text-green-400" })}
-                  </div>
-                </div>
-
-                {/* Terlambat */}
-                <div className="bg-[#1a1a1a] p-4 rounded-lg border-l-4 border-yellow-500">
-                  <div className="flex justify-between items-center">
-                    <div>
-                      <p className="text-gray-400">Terlambat</p>
-                      <h2 className="text-2xl font-bold">{dashboardStats.terlambat}</h2>
-                    </div>
-                    {renderIcon('Clock', { className: "h-8 w-8 text-yellow-400" })}
-                  </div>
-                </div>
-
-                {/* Tidak Hadir */}
-                <div className="bg-[#1a1a1a] p-4 rounded-lg border-l-4 border-red-500">
-                  <div className="flex justify-between items-center">
-                    <div>
-                      <p className="text-gray-400">Tidak Hadir</p>
-                      <h2 className="text-2xl font-bold">{dashboardStats.tidakHadir}</h2>
-                    </div>
-                    {renderIcon('UserX', { className: "h-8 w-8 text-red-400" })}
-                  </div>
-                </div>
-              </div>
-
-              {/* Grafik Kehadiran */}
-              <div className="bg-[#1a1a1a] p-4 rounded-lg">
-                <div className="flex justify-between items-center mb-4">
-                  <h2 className="text-xl font-bold">Grafik Kehadiran Karyawan</h2>
-                  <div className="flex items-center space-x-2">
-                    {renderIcon('PieChart', { className: "h-5 w-5" })}
-                    <span>2023</span>
-                  </div>
-                </div>
-                
-                <div className="h-80">
-                  <ResponsiveContainer width="100%" height="100%">
-                    <BarChart
-                      data={attendanceData}
-                      margin={{ top: 20, right: 30, left: 20, bottom: 5 }}
-                    >
-                      <CartesianGrid strokeDasharray="3 3" stroke="#2d3748" />
-                      <XAxis 
-                        dataKey="name" 
-                        stroke="#a0aec0" 
-                        tick={{ fill: '#a0aec0' }}
-                      />
-                      <YAxis 
-                        stroke="#a0aec0" 
-                        tick={{ fill: '#a0aec0' }}
-                      />
-                      <Tooltip 
-                        contentStyle={{ 
-                          backgroundColor: '#1a1a1a',
-                          borderColor: '#4A5568',
-                          borderRadius: '0.25rem'
-                        }}
-                        itemStyle={{ color: '#fff' }}
-                      />
-                      <Legend />
-                      <Bar 
-                        dataKey="hadir" 
-                        fill="#48bb78" 
-                        name="Hadir" 
-                        radius={[4, 4, 0, 0]}
-                      />
-                      <Bar 
-                        dataKey="terlambat" 
-                        fill="#ecc94b" 
-                        name="Terlambat" 
-                        radius={[4, 4, 0, 0]}
-                      />
-                      <Bar 
-                        dataKey="tidakHadir" 
-                        fill="#f56565" 
-                        name="Tidak Hadir" 
-                        radius={[4, 4, 0, 0]}
-                      />
-                    </BarChart>
-                  </ResponsiveContainer>
-                </div>
+       </motion.aside> 
+       
+      ): isMobileMenuOpen && (
+        <motion.div
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          exit={{ opacity: 0 }}
+          className="fixed inset-0 z-50 bg-black bg-opacity-80"
+          onClick={() => setIsMobileMenuOpen(false)}
+        >
+          <motion.aside
+            className="w-full max-w-xs bg-[#0d0d0d] border-r border-[#333] h-full overflow-y-auto"
+            onClick={(e) => e.stopPropagation()}
+            initial={{ x: -300 }}
+            animate={{ x: 0 }}
+            exit={{ x: -300 }}
+            transition={{ type: 'spring', stiffness: 100 }}
+          >
+            <div className="p-4 border-b border-[#333]">
+              <h2 className="text-lg font-bold text-white">{user.role} Dashboard</h2>
+              <div className="mt-2">
+                <p className="text-sm text-blue-400">@{user.username}</p>
+                <p className="text-xs text-gray-400 truncate">{user.email}</p>
               </div>
             </div>
-          ) : (
-            children
-          )}
+
+            <nav className="flex-1 p-4 space-y-1 overflow-y-auto">
+              {menuItems.map((item) => (
+                <div key={item.name}>
+                  {item.items.length > 0 ? (
+                    <Collapsible>
+                      <CollapsibleTrigger asChild>
+                        <Button
+                          variant="ghost"
+                          className={`w-full justify-between hover:bg-[#1a1a1a] hover:text-white px-3 py-2 ${
+                            activeMenu === item.name ? 'bg-[#1a1a1a] text-white' : 'text-gray-400'
+                          }`}
+                        >
+                          <div className="flex items-center">
+                            {item.icon}
+                            <span className="ml-2">{item.name}</span>
+                          </div>
+                          <ChevronDownIcon className="h-4 w-4 text-current" />
+                        </Button>
+                      </CollapsibleTrigger>
+                      <CollapsibleContent className="ml-6 space-y-1">
+                        {item.items.map((subItem) => (
+                          <motion.div
+                            key={subItem.name}
+                            whileHover={{ scale: 1.02 }}
+                            transition={{ type: 'spring', stiffness: 300 }}
+                          >
+                            <Link href={subItem.href} onClick={() => setIsMobileMenuOpen(false)}>
+                              <Button
+                                variant="ghost"
+                                className={`w-full justify-start hover:bg-[#1a1a1a] hover:text-white px-3 py-1 ${
+                                  pathname === subItem.href ? 'bg-[#1a1a1a] text-white' : 'text-gray-400'
+                                }`}
+                              >
+                                {subItem.icon}
+                                <span className="ml-2">{subItem.name}</span>
+                              </Button>
+                            </Link>
+                          </motion.div>
+                        ))}
+                      </CollapsibleContent>
+                    </Collapsible>
+                  ) : (
+                    <motion.div
+                      whileHover={{ scale: 1.02 }}
+                      whileTap={{ scale: 0.98 }}
+                    >
+                      <Link href={item.href} onClick={() => setIsMobileMenuOpen(false)}>
+                        <Button
+                          variant="ghost"
+                          className={`w-full justify-start hover:bg-[#1a1a1a] hover:text-white px-3 py-2 ${
+                            activeMenu === item.name ? 'bg-[#1a1a1a] text-white' : 'text-gray-400'
+                          }`}
+                        >
+                          {item.icon}
+                          <span className="ml-2">{item.name}</span>
+                        </Button>
+                      </Link>
+                    </motion.div>
+                  )}
+                </div>
+              ))}
+            </nav>
+
+            <div className="p-4 border-t border-[#333]">
+              <Button 
+                variant="ghost"
+                className="w-full justify-start hover:bg-[#1a1a1a] hover:text-white text-gray-400 px-3 py-2"
+                onClick={() => {
+                  localStorage.removeItem('authToken')
+                  logout()
+                  window.location.href = '/login'
+                }}
+              >
+                <LogOut className="h-5 w-5 mr-2" />
+                <span>Logout</span>
+              </Button>
+            </div>
+          </motion.aside>
+        </motion.div>
+      )}
+
+      {/* Main Content */}
+       <main className="flex-1 flex flex-col overflow-hidden">
+        <header className="bg-[#1a1a1a] p-4 border-b border-[#333] flex items-center justify-between">
+          <div className="flex items-center">
+            {isMobile && (
+              <button 
+                onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
+                className="mr-4 p-1 rounded-md hover:bg-[#333]"
+              >
+                <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 12h16M4 18h16" />
+                </svg>
+              </button>
+            )}
+            <h1 className="text-xl font-semibold text-white">{activeMenu}</h1>
+          </div>
+        </header>
+        
+        <div className="flex-1 overflow-auto p-6 bg-[#0d0d0d]">
+          <SmoothTransition>
+            {children}
+          </SmoothTransition>
         </div>
       </main>
     </div>

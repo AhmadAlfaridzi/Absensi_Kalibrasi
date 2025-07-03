@@ -1,6 +1,8 @@
 {
   "/_not-found/page": "app/_not-found/page.js",
   "/dashboard/page": "app/dashboard/page.js",
+  "/dashboard/presensi/absen/page": "app/dashboard/presensi/absen/page.js",
+  "/dashboard/presensi/history/page": "app/dashboard/presensi/history/page.js",
   "/favicon.ico/route": "app/favicon.ico/route.js",
   "/login/page": "app/login/page.js"
 }
