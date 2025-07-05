@@ -14,9 +14,9 @@ export default function LoginPage() {
   const [currentDate, setCurrentDate] = useState('')
   const [currentTime, setCurrentTime] = useState('')
   const router = useRouter()
-  const { login } = useAuth() // Menggunakan login dari auth context
+  const { login } = useAuth() 
 
-  // Update date and time in real-time
+  // Update date and time secara real time
   useEffect(() => {
     const updateDateTime = () => {
       const now = new Date()
@@ -67,7 +67,7 @@ export default function LoginPage() {
 
   return (
     <div className="relative min-h-[100dvh] flex items-center justify-center p-4 sm:p-6">
-      {/* Background Image */}
+      {/* Background login */}
       <div className="fixed inset-0 -z-10">
         <Image
           src="/images/bg-login.jpg"
@@ -84,9 +84,9 @@ export default function LoginPage() {
       {/* Main Container */}
       <div className="w-full max-w-md sm:max-w-4xl mx-auto bg-[#0d0d0d]/95 rounded-xl overflow-hidden border border-[#4A5568] backdrop-blur-sm">
         <div className="flex flex-col sm:flex-row">
-          {/* Left Section - Form */}
+          {/* pembungkus bagian kanan Form */}
           <div className="w-full sm:w-1/2 p-6 sm:p-8">
-            {/* Logo and Company Name */}
+            {/* Logo dan Nama Perusahaan */}
             <div className="flex flex-col sm:flex-row items-center mb-6 sm:mb-8">
               <Image 
                 src="/images/company-logo.png"
@@ -207,7 +207,7 @@ export default function LoginPage() {
             </form>
           </div>
 
-          {/* Right Section - Hidden on mobile */}
+          {/* pembungkus bagian kiri form - note: Hidden pada versi mobile */}
           <div className="hidden sm:flex sm:w-1/2 bg-[#1a1a1a] flex-col items-center justify-center p-8 text-center">
             <h2 className="text-3xl font-bold text-[#FBF991] mb-6">
               SELAMAT DATANG

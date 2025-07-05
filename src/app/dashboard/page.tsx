@@ -1,56 +1,21 @@
 'use client'
 
 import { useAuth } from '@/context/authContext'
-import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card'
 import { redirect } from 'next/navigation'
+import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer } from 'recharts'
 
-type RoleContent = {
-  title: string
-  stats: {
-    title: string
-    value: string
-    icon: string
-  }[]
+const dashboardStats = {
+  totalKaryawan: 52,
+  tepatWaktu: 45,
+  terlambat: 5,
+  tidakHadir: 2
 }
 
-const DEFAULT_CONTENT: RoleContent = {
-  title: "Dashboard Overview",
-  stats: [
-    { title: "Activities", value: "0", icon: "📊" },
-    { title: "Notifications", value: "0", icon: "🔔" }
-  ]
-}
-
-const ROLE_CONTENT: Record<string, RoleContent> = {
-  admin: {
-    title: "Administrator Overview",
-    stats: [
-      { title: "Total Users", value: "1,234", icon: "👥" },
-      { title: "System Health", value: "Optimal", icon: "✅" }
-    ]
-  },
-  Owner: {
-    title: "Business Overview",
-    stats: [
-      { title: "Revenue", value: "Rp 250M", icon: "💰" },
-      { title: "Profit Margin", value: "32%", icon: "📈" }
-    ]
-  },
-  Direktur: {
-    title: "Operational Dashboard",
-    stats: [
-      { title: "Active Projects", value: "24", icon: "🏗️" },
-      { title: "Productivity", value: "87%", icon: "⚡" }
-    ]
-  },
-  karyawan: {
-    title: "My Dashboard",
-    stats: [
-      { title: "Tasks Due", value: "5", icon: "📝" },
-      { title: "Completed", value: "12", icon: "✔️" }
-    ]
-  }
-}
+const attendanceData = [
+  { name: 'Jan', hadir: 45, terlambat: 5, tidakHadir: 2 },
+  { name: 'Feb', hadir: 42, terlambat: 8, tidakHadir: 3 },
+  { name: 'Mar', hadir: 48, terlambat: 2, tidakHadir: 1 }
+]
 
 export default function DashboardPage() {
   const { user } = useAuth()
@@ -59,51 +24,66 @@ export default function DashboardPage() {
     redirect('/login')
   }
 
-  const getRoleContent = (): RoleContent => {
-    return ROLE_CONTENT[user.role] || DEFAULT_CONTENT
-  }
-
-  const roleContent = getRoleContent()
-
   return (
     <div className="space-y-6">
-      <div className="border-b pb-4">
-        <h1 className="text-2xl font-bold">{roleContent.title}</h1>
-        <p className="text-muted-foreground">Welcome back, {user.name}</p>
-      </div>
-
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-        {roleContent.stats.map((stat, index) => (
-          <Card key={index}>
-            <CardHeader className="flex flex-row items-center justify-between">
-              <CardTitle className="text-sm font-medium">{stat.title}</CardTitle>
-              <span className="text-2xl">{stat.icon}</span>
-            </CardHeader>
-            <CardContent>
-              <div className="text-2xl font-bold">{stat.value}</div>
-            </CardContent>
-          </Card>
-        ))}
-      </div>
-
-      <Card>
-        <CardHeader>
-          <CardTitle>Recent Activities</CardTitle>
-        </CardHeader>
-        <CardContent>
-          <div className="space-y-4">
-            <div className="flex items-center gap-4 p-2 hover:bg-gray-50 rounded">
-              <div className="bg-[#0d0d0d]/10 p-2 rounded-full">
-                <span>📅</span>
-              </div>
-              <div>
-                <p className="font-medium">System updated</p>
-                <p className="text-sm text-muted-foreground">2 hours ago</p>
-              </div>
+      {/* Statistik untuk kehadiran karyawan */}
+      <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+        {/*jumlah total Karyawan */}
+        <div className="bg-[#1a1a1a] p-4 rounded-lg border-l-4 border-blue-500">
+          <div className="flex justify-between items-center">
+            <div>
+              <p className="text-gray-400">Total Karyawan</p>
+              <h2 className="text-2xl font-bold">{dashboardStats.totalKaryawan}</h2>
             </div>
           </div>
-        </CardContent>
-      </Card>
+        </div>
+
+        <div className="bg-[#1a1a1a] p-4 rounded-lg border-l-4 border-green-500">
+          <div className="flex justify-between items-center">
+            <div>
+              <p className="text-gray-400">Tepat Waktu</p>
+              <h2 className="text-2xl font-bold">{dashboardStats.tepatWaktu}</h2>
+            </div>
+          </div>
+        </div>
+
+        <div className="bg-[#1a1a1a] p-4 rounded-lg border-l-4 border-yellow-500">
+          <div className="flex justify-between items-center">
+            <div>
+              <p className="text-gray-400">Terlambat</p>
+              <h2 className="text-2xl font-bold">{dashboardStats.terlambat}</h2>
+            </div>
+          </div>
+        </div>
+
+        <div className="bg-[#1a1a1a] p-4 rounded-lg border-l-4 border-red-500">
+          <div className="flex justify-between items-center">
+            <div>
+              <p className="text-gray-400">Tidak Hadir</p>
+              <h2 className="text-2xl font-bold">{dashboardStats.tidakHadir}</h2>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      {/* Grafik Kehadiran */}
+      <div className="bg-[#1a1a1a] p-4 rounded-lg">
+        <h2 className="text-xl font-bold mb-4">Grafik Kehadiran Karyawan</h2>
+        <div className="h-80">
+          <ResponsiveContainer width="100%" height="100%">
+            <BarChart data={attendanceData}>
+              <CartesianGrid strokeDasharray="3 3" stroke="#2d3748" />
+              <XAxis dataKey="name" stroke="#a0aec0" />
+              <YAxis stroke="#a0aec0" />
+              <Tooltip />
+              <Legend />
+              <Bar dataKey="hadir" fill="#48bb78" name="Hadir" />
+              <Bar dataKey="terlambat" fill="#ecc94b" name="Terlambat" />
+              <Bar dataKey="tidakHadir" fill="#f56565" name="Tidak Hadir" />
+            </BarChart>
+          </ResponsiveContainer>
+        </div>
+      </div>
     </div>
   )
 }
