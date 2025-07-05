@@ -2,7 +2,7 @@
 import { useState, useEffect } from 'react'
 import { useAuth } from '@/context/authContext'
 import { useRouter } from 'next/navigation'
-import { ArrowLeft } from 'lucide-react' // Hanya import yang digunakan langsung
+import { ArrowLeft } from 'lucide-react' 
 import { Button } from '@/components/ui/button'
 import { motion } from 'framer-motion'
 import AttendanceCard from '@/components/presensi/attendenceCard'

@@ -4,7 +4,7 @@ type AttendanceHistory = {
   date: string
   clockIn: string
   clockOut: string
-  status: 'Tepat Waktu' | 'Terlambat'
+  status: 'Tepat Waktu' | 'Terlambat' | 'Pulang Cepat'
 }
 
 type HistoryTableProps = {

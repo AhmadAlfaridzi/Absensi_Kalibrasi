@@ -16,7 +16,6 @@ import {
   CalendarCheck,
   History,
   Mail,
-  FileText,
   Users,
   Box,
   Settings,
@@ -27,6 +26,8 @@ import {
   LogIn
 } from 'lucide-react'
 import { SmoothTransition } from '@/components/ui/smooth-transition'
+import { UserRole } from '@/types/user'
+
 
 function useMediaQuery(query: string): boolean {
   const [matches, setMatches] = useState(false)
@@ -52,7 +53,9 @@ type MenuItem = {
     name: string
     href: string
     icon?: React.ReactNode
+    allowedRoles?: UserRole[]
   }[]
+  allowedRoles: UserRole[]
 }
 
 export default function DashboardLayout({ children }: { children: React.ReactNode }) {
@@ -78,7 +81,8 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
       name: 'Dashboard',
       icon: <LayoutDashboard className="h-5 w-5 text-blue-400" />,
       href: '/dashboard',
-      items: []
+      items: [],
+      allowedRoles: ['admin', 'Owner', 'Direktur', 'Manajer', 'karyawan']
     },
     {
       name: 'Presensi',
@@ -88,32 +92,31 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
         { 
           name: 'Absen', 
           icon: <LogIn className="h-4 w-4 text-green-400" />,
-          href: '/dashboard/presensi/absen' 
+          href: '/dashboard/presensi/absen', 
+          allowedRoles: ['Direktur', 'Manajer', 'karyawan', 'Teknisi']
         },
         { 
           name: 'History', 
           icon: <History className="h-4 w-4 text-green-400" />,
-          href: '/dashboard/presensi/history' 
+          href: '/dashboard/presensi/history',
+          allowedRoles: ['admin', 'Owner', 'Direktur', 'Manajer','Teknisi']
         }
-      ]
+      ],
+      allowedRoles: ['admin', 'Direktur', 'Manajer', 'karyawan', 'Teknisi']
     },
     {
       name: 'Riwayat Absensi',
       icon: <History className="h-5 w-5 text-purple-400" />,
       href: '/dashboard/riwayat-absensi',
-      items: []
+      items: [],
+      allowedRoles: ['admin', 'Owner', 'Direktur', 'Manajer']
     },
     {
       name: 'Surat Keluar',
       icon: <Mail className="h-5 w-5 text-red-400" />,
       href: '/dashboard/surat-keluar',
-      items: []
-    },
-    {
-      name: 'Rekap Absensi',
-      icon: <FileText className="h-5 w-5 text-orange-400" />,
-      href: '/dashboard/rekap-absensi',
-      items: []
+      items: [],
+      allowedRoles: ['admin', 'Manajer']
     },
     {
       name: 'Pegawai',
@@ -123,14 +126,17 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
         { 
           name: 'Data', 
           icon: <Users className="h-4 w-4 text-yellow-400" />,
-          href: '/dashboard/pegawai/data' 
+          href: '/dashboard/pegawai/data',
+          allowedRoles: ['admin', 'Manajer']
         },
         { 
           name: 'Jabatan', 
           icon: <Briefcase className="h-4 w-4 text-yellow-400" />,
-          href: '/dashboard/pegawai/jabatan' 
+          href: '/dashboard/pegawai/jabatan', 
+          allowedRoles: ['admin']
         }
-      ]
+      ],
+      allowedRoles: ['admin', 'Manajer']
     },
     {
       name: 'Inventory',
@@ -140,39 +146,59 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
         { 
           name: 'Alat Kalibrasi', 
           icon: <Wrench className="h-4 w-4 text-teal-400" />,
-          href: '/dashboard/inventory/kalibrasi' 
+          href: '/dashboard/inventory/alat-kalibrasi', 
+          allowedRoles: ['admin', 'Direktur', 'Teknisi']
         },
         { 
           name: 'Sparepart', 
           icon: <Package className="h-4 w-4 text-teal-400" />,
-          href: '/dashboard/inventory/sparepart' 
+          href: '/dashboard/inventory/sparepart', 
+          allowedRoles: ['admin', 'Teknisi']
         }
-      ]
+      ],
+      allowedRoles: ['admin', 'Direktur', 'Teknisi']
     },
     {
-      name: 'Pengaturan',
+      name: 'Pengaturan Sistem',
       icon: <Settings className="h-5 w-5 text-gray-400" />,
       href: '/dashboard/pengaturan',
-      items: []
+      items: [],
+      allowedRoles: ['admin']
     },
-  ], [])
+  ], []);
+
+const filteredMenuItems = useMemo(() => {
+  if (!user?.role) return [];
+  
+  return menuItems
+    .filter(item => item.allowedRoles.includes(user.role))
+    .map(item => ({
+      ...item,
+      items: item.items.filter(subItem => 
+        subItem.allowedRoles?.includes(user.role) ?? true
+      )
+    }));
+}, [menuItems, user?.role]);
 
 const activeMenu = useMemo(() => {
     if (!pathname) return 'Dashboard'
-    const currentPath = pathname.split('/dashboard/')[1]?.split('/')[0] || ''
-    const foundItem = menuItems.find(item => 
-      item.href.includes(currentPath) || 
-      item.items.some(subItem => subItem.href.includes(currentPath)))
-    return foundItem?.name || 'Dashboard'
-  }, [pathname, menuItems])
 
- if (!user) {
+    const currentPath = pathname.split('/dashboard/')[1]?.split('/')[0] || ''
+   
+    const foundItem = filteredMenuItems.find(item => 
+      item.href.includes(currentPath) || 
+      item.items.some(subItem => subItem.href.includes(currentPath))
+      );
+      return foundItem?.name || 'Dashboard';
+    }, [pathname, filteredMenuItems]);
+
+  if (!user) {
     return (
       <div className="flex items-center justify-center h-screen bg-[#0d0d0d]">
         <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-blue-500" />
       </div>
-    )
-  }
+    );
+}
 
   return (
     <div className="flex h-screen bg-[#0d0d0d] text-gray-200">
@@ -193,7 +219,7 @@ const activeMenu = useMemo(() => {
         </div>
 
         <nav className="flex-1 p-4 space-y-1 overflow-y-auto">
-          {menuItems.map((item) => (
+          {filteredMenuItems.map((item) => (
             <div key={item.name}>
               {item.items.length > 0 ? (
                 <Collapsible>
@@ -296,7 +322,7 @@ const activeMenu = useMemo(() => {
             </div>
 
             <nav className="flex-1 p-4 space-y-1 overflow-y-auto">
-              {menuItems.map((item) => (
+              {filteredMenuItems.map((item) => (
                 <div key={item.name}>
                   {item.items.length > 0 ? (
                     <Collapsible>

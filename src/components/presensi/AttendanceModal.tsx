@@ -1,3 +1,4 @@
+
 'use client'
 import { useState, useEffect, useRef } from 'react'
 import Image from 'next/image'
@@ -41,11 +42,25 @@ export default function AttendanceModal({
 
   const startCamera = async () => {
     try {
+
+      if (window.location.protocol !== 'https:' && window.location.hostname 
+        !== 'localhost' && !window.location.hostname.startsWith('192.168.')) 
+        {
+         alert('Akses kamera membutuhkan koneksi HTTPS atau jaringan lokal. Mohon gunakan HTTPS atau jaringan lokal.')
+      return
+    }
       const constraints: MediaStreamConstraints = {
         video: {
-          width: { ideal: 1280 },
-          height: { ideal: 720 },
-          facingMode: cameraFacingMode
+          // width: { ideal: 1280 },
+          // height: { ideal: 720 },
+          facingMode: cameraFacingMode,
+
+          width: { ideal: isMobile ? 640 : 1280 },
+          height: { ideal: isMobile ? 480 : 720 },
+          aspectRatio: isMobile ? 0.75 : 1.77,
+
+
+          
         }
       }
 
@@ -57,12 +72,32 @@ export default function AttendanceModal({
         
         // Handle orientation change di mobile
         if (isMobile) {
-          videoRef.current.style.transform = 'scaleX(-1)' // Mirror effect untuk kamera depan
+          videoRef.current.style.transform = 'scaleX(-1)' 
+          videoRef.current.style.objectFit = 'contain'
+          
+          videoRef.current.style.width = '100%';
+          videoRef.current.style.height = 'auto';
+          videoRef.current.style.maxHeight = '100vh';
+          
+          // Handle orientation change
+          const handleResize = () => {
+            if (videoRef.current) {
+              const isPortrait = window.innerHeight > window.innerWidth
+              videoRef.current.style.width = isPortrait ? '100%' : 'auto'
+              videoRef.current.style.height = isPortrait ? 'auto' : '100%'
+            }
+          }
+          
+          window.addEventListener('resize', handleResize)
+          handleResize() // Panggil sekali saat pertama kali
+          
+          // Bersihkan event listener saat komponen unmount
+          return () => window.removeEventListener('resize', handleResize)
         }
       }
     } catch (err) {
       console.error("Error accessing camera:", err)
-      alert("Tidak dapat mengakses kamera. Pastikan Anda memberikan izin.")
+      alert("Tidak dapat mengakses kamera. Pastikan Anda memberikan izin.atau gunakan HTTPS.")
     }
   }
 
@@ -214,3 +249,4 @@ export default function AttendanceModal({
     </Dialog>
   )
 }
+
