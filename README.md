@@ -39,9 +39,4 @@ The easiest way to deploy your Next.js app is to use the [Vercel Platform](https
 
 Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
 # Absensi_kalibrasi
-# Absensi_kalibrasi
-# Absensi_kalibrasi
 =======
-# Absensi_Kalibrasi
->>>>>>> 7cbf4eb53ec3c78658a3f91c88dce6e4ea0a0a1b
->>>>>>> login
